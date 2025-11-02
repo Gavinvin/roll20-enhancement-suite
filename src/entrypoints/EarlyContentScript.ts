@@ -1,9 +1,9 @@
-import { getBrowser } from "../utils/MiscUtils";
+import { getBrowserRuntime } from "../utils/MiscUtils";
 import { Config } from "../utils/Config";
 
 console.log("EARLY CONTENT SCRIPT");
 
-const url = getBrowser().extension.getURL("WebsiteBootstrapBefore.js");
+const url = getBrowserRuntime().getURL("WebsiteBootstrapBefore.js");
 console.log(url);
 
 let waitedFor = 0;
