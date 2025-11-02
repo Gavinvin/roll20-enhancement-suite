@@ -1,13 +1,14 @@
 import { VTTES_MODULE_CONFIGS } from '../Configs'
-import {getBrowser, replaceAll} from '../utils/MiscUtils';
+import {getBrowser} from '../utils/MiscUtils';
 import {doesBrowserNotSupportResponseFiltering} from "../utils/BrowserDetection";
 import { apply_mods_to_text } from "../HookUtils";
-import {replace_all_and_count} from "../utils/MiscUtils";
+
+const browserApi = getBrowser();
 
 if(doesBrowserNotSupportResponseFiltering()) {
 
   // @ChromeScriptFetching
-  getBrowser().runtime.onMessage.addListener((request, sender, send_response) => {
+  browserApi.runtime.onMessage.addListener((request, sender, send_response) => {
 
 
     if(request.VTTES_WANTS_CDN_SCRIPTS_FROM_BACKGROUND) {
@@ -128,7 +129,7 @@ if(doesBrowserNotSupportResponseFiltering()) {
     //console.log("pass", request.url, request);
   };
 
-  getBrowser().webRequest.onBeforeRequest.addListener(
+  browserApi.webRequest.onBeforeRequest.addListener(
     request_blocker,
     {
       urls: [
@@ -156,7 +157,7 @@ else {
       return;
     }
 
-    const filter = getBrowser().webRequest.filterResponseData(request.requestId);
+    const filter = browserApi.webRequest.filterResponseData(request.requestId);
     const decoder = new TextDecoder("utf-8");
 
     let string_buffer = "";
@@ -173,7 +174,7 @@ else {
     };
   };
 
-  getBrowser().webRequest.onBeforeRequest.addListener(
+  browserApi.webRequest.onBeforeRequest.addListener(
     request_listener,
     {urls: [
       "*://app.roll20.net/*",
@@ -183,4 +184,4 @@ else {
   );
 }
 
-console.log("window.r20es Background hook script initialized");
+console.log("[r20es] Background runtime initialized");

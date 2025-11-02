@@ -160,7 +160,16 @@ const getBrowser = (): any => {
     console.error("getBrowser call in userscript!");
     console.trace();
   }
-  return chrome || browser;
+
+  if (typeof chrome !== "undefined") {
+    return chrome;
+  }
+
+  if (typeof browser !== "undefined") {
+    return browser;
+  }
+
+  throw new Error("VTTES: No extension runtime API found in the current context.");
 }
 
 const injectScript = function(name) {
