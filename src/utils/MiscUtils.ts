@@ -160,7 +160,30 @@ const getBrowser = (): any => {
     console.error("getBrowser call in userscript!");
     console.trace();
   }
-  return chrome || browser;
+
+  if (typeof chrome !== "undefined") {
+    return chrome;
+  }
+
+  if (typeof browser !== "undefined") {
+    return browser;
+  }
+
+  throw new Error("VTTES: No extension runtime API found in the current context.");
+}
+
+const getBrowserRuntime = () => {
+  const browser = getBrowser();
+
+  if (browser.runtime && typeof browser.runtime.getURL === "function") {
+    return browser.runtime;
+  }
+
+  if (browser.extension && typeof browser.extension.getURL === "function") {
+    return browser.extension;
+  }
+
+  throw new Error("VTTES: Unable to resolve an extension runtime API with getURL support.");
 }
 
 const injectScript = function(name) {
@@ -168,7 +191,7 @@ const injectScript = function(name) {
 
   var s = document.createElement("script");
   s.async = false;
-  s.src = getBrowser().extension.getURL(name);
+  s.src = getBrowserRuntime().getURL(name);
 
   s.onload = () => { s.remove(); };
   document.head.appendChild(s);
@@ -189,7 +212,7 @@ const createCSSElement = function(css, id) {
 export const LOGO_SVG_B64 = BUILD_CONSTANT_LOGO_B64;
 
 export {
-  getBrowser, readFile, safeParseJson,
+  getBrowser, getBrowserRuntime, readFile, safeParseJson,
   replaceAll, findByIdAndRemove,
   copy, getTransform, getRotation,
   safeCall, removeAllChildren,

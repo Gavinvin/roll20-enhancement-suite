@@ -11,22 +11,28 @@ const editorUrls = [
 ];
 
 const gen = (browser, origVersionName) => {
+  const isChrome = browser.id === "chrome";
+  const hostPermissions = [
+    '*://app.roll20.net/editor*',
+    '*://cdn.roll20.net/*',
+  ];
+
+  const webAccessibleResources = [
+    '*.tsx',
+    '*.ts',
+    '*.js',
+    '*.css',
+    'logo.svg',
+    '*.png',
+    '*.webm'
+  ];
+
   let manifest = {
-    manifest_version: 2,
+    manifest_version: isChrome ? 3 : 2,
     name: 'VTT Enhancement Suite',
     version: VersionNameGen(origVersionName),
     description: 'aka R20ES. Provides quality-of-life and workflow speed improvements to Roll20.',
 
-    permissions: [
-      '*://app.roll20.net/editor/',
-      '*://app.roll20.net/editor',
-      '*://app.roll20.net/editor?*',
-      '*://app.roll20.net/editor#*',
-      '*://cdn.roll20.net/*',
-      'webRequest',
-      'webRequestBlocking',
-      'storage',
-    ],
     icons: {
       "16": "logo16.png",
       "48": "logo48.png",
@@ -49,11 +55,15 @@ const gen = (browser, origVersionName) => {
         run_at: "document_start"
       },
     ],
-    background: {
-      scripts: [
-        'Background.js'
-      ]
-    },
+    background: isChrome
+      ? {
+        service_worker: 'Background.js'
+      }
+      : {
+        scripts: [
+          'Background.js'
+        ]
+      },
 
     browser_specific_settings: {
       gecko: {
@@ -61,15 +71,34 @@ const gen = (browser, origVersionName) => {
       }
     },
 
-    web_accessible_resources: [
-      '*.tsx',
-      '*.ts',
-      '*.js',
-      '*.css',
-      'logo.svg',
-      '*.png',
-      '*.webm'
-    ]
+    web_accessible_resources: isChrome
+      ? [
+        {
+          resources: webAccessibleResources,
+          matches: [
+            'https://app.roll20.net/*',
+            'https://cdn.roll20.net/*',
+          ],
+        }
+      ]
+      : webAccessibleResources
+  }
+
+  if (isChrome) {
+    manifest.host_permissions = hostPermissions;
+    manifest.permissions = [
+      'webRequest',
+      'webRequestBlocking',
+      'storage',
+    ];
+  }
+  else {
+    manifest.permissions = [
+      ...hostPermissions,
+      'webRequest',
+      'webRequestBlocking',
+      'storage',
+    ];
   }
 
   if (browser.id === "chrome") {
